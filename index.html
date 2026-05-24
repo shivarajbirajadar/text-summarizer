@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarize</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Crimson+Pro:wght@400;500&family=JetBrains+Mono:wght@400&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #e8e0d0;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: #f5f0e8;
+            border-radius: 10px;
+            padding: 2.5rem 2rem 2rem;
+            font-family: 'Crimson Pro', Georgia, serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #2b2318 0px, #2b2318 60px,
+                #c0392b 60px, #c0392b 62px,
+                #f5f0e8 62px, #f5f0e8 64px
+            );
+        }
+
+        .eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #c0392b;
+            margin-bottom: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: #1a1612;
+            line-height: 1.05;
+            letter-spacing: -0.5px;
+        }
+
+        h1 em {
+            font-style: italic;
+            font-weight: 400;
+            color: #5a3e2b;
+        }
+
+        .rule {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 1.1rem 0;
+        }
+
+        .rule::before,
+        .rule::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #2b2318;
+        }
+
+        .rule span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: #8a7968;
+            text-transform: uppercase;
+        }
+
+        .lede {
+            font-size: 15px;
+            color: #5a4e3e;
+            line-height: 1.65;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        textarea {
+            width: 100%;
+            background: #faf7f2;
+            border: 1px solid #c8bba8;
+            border-bottom: 2px solid #2b2318;
+            color: #1a1612;
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 16px;
+            line-height: 1.7;
+            padding: 14px;
+            border-radius: 2px;
+            resize: vertical;
+            min-height: 150px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea:focus {
+            border-color: #c0392b;
+            box-shadow: 0 2px 0 0 #c0392b;
+        }
+
+        textarea::placeholder {
+            color: #b0a090;
+            font-style: italic;
+        }
+
+        .form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .hint {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: #a09080;
+            letter-spacing: 0.05em;
+        }
+
+        button[type="submit"] {
+            background: #2b2318;
+            color: #f5f0e8;
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        button[type="submit"]:hover {
+            background: #c0392b;
+        }
+
+        button[type="submit"]:active {
+            transform: scale(0.97);
+        }
+
+        .output-section {
+            margin-top: 1.75rem;
+        }
+
+        .output-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .output-header .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: #2b2318;
+            color: #f5f0e8;
+            padding: 3px 8px;
+            border-radius: 1px;
+        }
+
+        .output-header .line {
+            flex: 1;
+            height: 1px;
+            background: #c8bba8;
+        }
+
+        .output-card {
+            background: #faf7f2;
+            border: 1px solid #c8bba8;
+            border-left: 3px solid #c0392b;
+            padding: 16px 18px;
+            border-radius: 0 2px 2px 0;
+            min-height: 64px;
+            position: relative;
+        }
+
+        .output-card::after {
+            content: '"';
+            position: absolute;
+            top: 6px;
+            right: 14px;
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            color: #e8dfd0;
+            line-height: 1;
+        }
+
+        #summary-heading {
+            display: none;
+        }
+
+        #summary-text {
+            font-size: 16px;
+            color: #3a3020;
+            line-height: 1.75;
+            font-style: italic;
+        }
+
+        .watermark {
+            position: absolute;
+            bottom: 14px;
+            right: 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: #d0c8bc;
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="eyebrow">↳ NLP Tool — Transformer Model</div>
+        <h1>Text<br><em>Summarize</em></h1>
+
+        <div class="rule"><span>input</span></div>
+
+        <p class="lede">Paste any long-form text below and get a crisp, accurate summary instantly.</p>
+
+        <form id="summarization-form">
+            <textarea id="dialogue-input" placeholder="Paste your article, dialogue, or passage here…" required></textarea>
+            <div class="form-footer">
+                <span class="hint">← plain text only</span>
+                <button type="submit">Run Summary →</button>
+            </div>
+        </form>
+
+        <div class="output-section">
+            <div class="output-header">
+                <span class="tag">Summary Output</span>
+                <div class="line"></div>
+            </div>
+            <div class="output-card">
+                <h3 id="summary-heading">Content Summary</h3>
+                <p id="summary-text">Your generated summary will appear here…</p>
+            </div>
+        </div>
+
+        <div class="watermark">huggingface / transformers</div>
+
+    </div>
+
+    <script>
+    document.getElementById("summarization-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Get references to elements
+        const dialogueInput = document.getElementById("dialogue-input");
+        const summaryText = document.getElementById("summary-text");
+        const submitButton = e.target.querySelector("button");
+
+        const dialogue = dialogueInput.value.trim();
+        if (!dialogue) return;
+
+        // Show processing message and disable button
+        summaryText.innerText = "Processing...";
+        submitButton.disabled = true;
+
+        try {
+            // Send dialogue to backend
+            const response = await fetch("/summarize/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ dialogue }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            summaryText.innerText = data.summary || "No summary returned.";
+
+        } catch (err) {
+            // Show any error messages
+            summaryText.innerText = `Error: ${err.message}`;
+
+        } finally {
+            // Re-enable the button
+            submitButton.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
